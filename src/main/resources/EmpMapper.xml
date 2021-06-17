@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xxiaoqie.mapper.EmpMapper">
+  <resultMap type="Emp" id="EmpResult">
+    <id column="empid" property="empid"/>
+    <result column="empname" property="empname"/>
+    <result column="emptel" property="emptel"/>
+	<association property="dept" javaType="Dept" column="deptid" select="com.xxiaoqie.mapper.DeptMapper.selectDeptById"></association>
+  </resultMap>
+	<select id="selectById" resultType="Emp" resultMap="EmpResult">
+		SELECT * FROM emp WHERE empid = #{id}
+	</select>
+	<select id="selectAll" resultMap="EmpResult">
+		SELECT * FROM emp order by empid desc
+	</select>
+	<select id="selectEmpByDeptId" resultType="int" parameterType="int">
+	   	SELECT COUNT(1) FROM emp WHERE deptid = #{deptid}
+	</select>
+	<select id="selectEmpByPage" parameterType="map" resultMap="EmpResult">
+		SELECT * FROM emp
+		<where>
+			<if test="emp.dept!=null and emp.dept.deptid!=null and emp.dept.deptid!=0">
+				deptid = #{emp.dept.deptid}
+			</if>
+			<if test="emp.empname!=null and emp.empname!=''">
+				and empname like '%${emp.empname}%'
+			</if>
+		</where>
+		order by empid desc limit #{startindex},#{pagesize}
+	</select>
+	
+	<select id="selectEmpCount" parameterType="Emp" resultType="int">
+		SELECT COUNT(1) from emp
+		<where>
+			<if test="dept!=null and dept.deptid!=null and dept.deptid!=0">
+				deptid = #{dept.deptid}
+			</if>
+			<if test="empname!=null and empname!=''">
+				and empname like '%${empname}%'
+			</if>
+		</where>
+	</select>
+	<insert id="insertEmp" parameterType="Emp">
+		INSERT INTO emp(empname,tel,deptid) VALUES (#{empname},#{tel},#{dept.deptid})
+	</insert>
+	<update id="updateEmp" parameterType="Emp">
+		UPDATE emp SET empname=#{empname},tel=#{tel},deptid=#{dept.deptid} WHERE empid=#{empid}
+	</update>
+	<delete id="deleteEmpById" parameterType="int">
+		DELETE FROM emp WHERE empid = #{empid}
+	</delete>
+	<delete id="delEmpMany">
+		DELETE FROM emp WHERE empid in 
+		<foreach collection="array" index="index" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</delete>
+</mapper>
